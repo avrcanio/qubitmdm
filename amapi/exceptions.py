@@ -1,0 +1,2 @@
+class AmapiServiceError(Exception):
+    pass
