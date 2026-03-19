@@ -52,13 +52,20 @@ class AmapiService:
         except Exception as exc:
             raise self._map_error(exc) from exc
 
-    def create_enterprise(self, enterprise_token: str, enterprise_name: str) -> dict[str, Any]:
+    def create_enterprise(
+        self, enterprise_token: str, enterprise_name: str, signup_url_name: str | None = None
+    ) -> dict[str, Any]:
         try:
             client = self._client()
+            params = {
+                "projectId": settings.GOOGLE_CLOUD_PROJECT_ID,
+                "enterpriseToken": enterprise_token,
+                "body": {"enterpriseDisplayName": enterprise_name},
+            }
+            if signup_url_name:
+                params["signupUrlName"] = signup_url_name
             request = client.enterprises().create(
-                projectId=settings.GOOGLE_CLOUD_PROJECT_ID,
-                enterpriseToken=enterprise_token,
-                body={"enterpriseDisplayName": enterprise_name},
+                **params
             )
             return request.execute()
         except Exception as exc:

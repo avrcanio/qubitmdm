@@ -10,6 +10,11 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--create-signup-url", action="store_true", help="Create signup URL")
         parser.add_argument("--enterprise-token", type=str, help="Enterprise token received from signup callback")
+        parser.add_argument(
+            "--signup-url-name",
+            type=str,
+            help="Signup URL name returned by create-signup-url (e.g. signupUrls/...)",
+        )
         parser.add_argument("--enterprise-name", type=str, default="QubitMDM Enterprise")
         parser.add_argument("--organization-id", type=str, default="default-org")
         parser.add_argument("--service-account-key-path", type=str, required=True)
@@ -21,9 +26,13 @@ class Command(BaseCommand):
 
         token = options.get("enterprise_token")
         if token:
+            signup_url_name = options.get("signup_url_name")
+            if not signup_url_name:
+                raise CommandError("Provide --signup-url-name when using --enterprise-token.")
             enterprise_response = amapi_service.create_enterprise(
                 enterprise_token=token,
                 enterprise_name=options["enterprise_name"],
+                signup_url_name=signup_url_name,
             )
             enterprise_id = enterprise_response.get("name")
             if not enterprise_id:

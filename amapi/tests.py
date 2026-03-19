@@ -33,3 +33,21 @@ class AmapiServiceTests(TestCase):
     def test_create_enrollment_token_error(self, _):
         with self.assertRaises(AmapiServiceError):
             self.service.create_enrollment_token("policy-1")
+
+    @patch.object(AmapiService, "_client")
+    def test_create_enterprise_with_signup_url_name(self, client_mock):
+        client = MagicMock()
+        client_mock.return_value = client
+        client.enterprises.return_value.create.return_value.execute.return_value = {"name": "enterprises/abc"}
+
+        result = self.service.create_enterprise(
+            enterprise_token="token-1",
+            enterprise_name="QubitMDM Enterprise",
+            signup_url_name="signupUrls/C123",
+        )
+
+        self.assertEqual(result["name"], "enterprises/abc")
+        create_call = client.enterprises.return_value.create.call_args.kwargs
+        self.assertEqual(create_call["enterpriseToken"], "token-1")
+        self.assertEqual(create_call["signupUrlName"], "signupUrls/C123")
+        self.assertEqual(create_call["body"], {"enterpriseDisplayName": "QubitMDM Enterprise"})
