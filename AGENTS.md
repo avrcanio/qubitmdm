@@ -86,3 +86,25 @@ To add gcloud to PATH and enable completion:
 source /root/google-cloud-sdk/path.bash.inc
 source /root/google-cloud-sdk/completion.bash.inc
 ```
+
+## Project workflow policy (Docker-only)
+
+Date: 2026-03-19
+
+For this repository (`/opt/stacks/qubitmdm`) use a Docker-only workflow.
+
+Rules:
+- Do not create or use local Python virtual environments (`.venv`).
+- Run Django management commands only via Docker Compose.
+- Use container-to-container DB hostname `postgis` from this project containers.
+
+Common commands:
+
+```bash
+cd /opt/stacks/qubitmdm
+
+docker compose up -d --build
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py test
+```

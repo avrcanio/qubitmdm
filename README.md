@@ -2,7 +2,7 @@
 
 Custom EMM backend based on Android Management API (AMAPI), built with Django + DRF.
 
-## Quick start
+## Docker-only quick start
 
 1. Copy env template:
 
@@ -10,32 +10,37 @@ Custom EMM backend based on Android Management API (AMAPI), built with Django + 
 cp .env.example .env
 ```
 
-2. Ensure `postgis` container is up (`127.0.0.1:5432`) and create DB:
+2. Ensure `postgis` container is up and create DB once:
 
 ```bash
 docker exec ce55603ca88f psql -U postgres -d postgres -c "CREATE DATABASE qubitmdm;"
 ```
 
-3. Install deps and migrate:
+3. Build and start app:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py createsuperuser
+docker compose up -d --build
 ```
 
-4. Run app:
+4. Run migrations:
 
 ```bash
-python manage.py runserver
+docker compose exec web python manage.py migrate
 ```
 
-## Docker mode
-
-Set `.env` with `DB_HOST=host.docker.internal` and run:
+5. Create superuser:
 
 ```bash
-docker compose up --build
+docker compose exec web python manage.py createsuperuser
 ```
+
+6. Optional tests:
+
+```bash
+docker compose exec web python manage.py test
+```
+
+## Notes
+
+- Default `.env.example` is configured for container-to-container DB access (`DB_HOST=postgis`).
+- If you run Django directly on host (not recommended in this workflow), use `DB_HOST=127.0.0.1`.

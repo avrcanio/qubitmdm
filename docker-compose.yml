@@ -2,11 +2,26 @@ services:
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
-    ports:
-      - "8000:8000"
     env_file:
       - .env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     volumes:
       - .:/app
+    expose:
+      - "8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.qubitmdm.rule=Host(`qubitmdm.online`)"
+      - "traefik.http.routers.qubitmdm.entrypoints=websecure"
+      - "traefik.http.routers.qubitmdm.tls=true"
+      - "traefik.http.routers.qubitmdm.service=qubitmdm"
+      - "traefik.http.services.qubitmdm.loadbalancer.server.port=8000"
+    networks:
+      - proxy
+      - backend
+
+networks:
+  proxy:
+    external: true
+  backend:
+    external: true
