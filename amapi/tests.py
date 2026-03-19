@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
+from django.urls import reverse
 
 from core.models import Enterprise
 
@@ -51,3 +52,21 @@ class AmapiServiceTests(TestCase):
         self.assertEqual(create_call["enterpriseToken"], "token-1")
         self.assertEqual(create_call["signupUrlName"], "signupUrls/C123")
         self.assertEqual(create_call["body"], {"enterpriseDisplayName": "QubitMDM Enterprise"})
+
+
+class AmapiCallbackTests(TestCase):
+    def test_callback_returns_token_payload(self):
+        response = self.client.get(
+            reverse("amapi-callback"),
+            {"enterpriseToken": "token-123", "signupUrlName": "signupUrls/Cabc"},
+        )
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["status"], "ok")
+        self.assertEqual(payload["enterpriseToken"], "token-123")
+        self.assertEqual(payload["signupUrlName"], "signupUrls/Cabc")
+
+    def test_callback_requires_enterprise_token(self):
+        response = self.client.get(reverse("amapi-callback"))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["status"], "missing_enterprise_token")
