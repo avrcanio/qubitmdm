@@ -6,6 +6,7 @@ services:
       - .env
     volumes:
       - .:/app
+      - ./secrets/amapi-service-account.json:/run/secrets/amapi-service-account.json:ro
     expose:
       - "8000"
     labels:
